@@ -4,7 +4,6 @@ All world creatures
 """
 
 import random
-# from world_description import Node
 
 
 class Plant:
@@ -33,9 +32,9 @@ class Herbivore:
         self.age = 0
 
     def eat(self, plant: Plant):
-        plant.subtract_hp(25)
+        plant.subtract_hp(15)
 
-        self.hunger -= 25
+        self.hunger -= 15
 
         if self.hunger < -100:
             self.hunger = -100
@@ -53,20 +52,21 @@ class Herbivore:
 
             return Herbivore(sex)
 
-    def move_from_to(self, herbivore, node1: Node, node2: Node):
+    def move_from_to(self, herbivore, node1, node2):
         node2.add_herbivore(node1.remove_herbivore(herbivore))
 
-    def move(self, node: Node, field_part):
+    def move(self, node, field_part):
         res_scores = list()
-        max_score_node = None
-        max_score = 0
+        max_score_node = field_part[0:1, 0:1][0][0]
+        max_score = self.get_cost(field_part[0:1, 0:1][0][0])
+        # print(max_score_node)
 
         for row in field_part:
 
             row_scores = list()
             for el in row:
 
-                score = self.get_cost([[el]])
+                score = self.get_cost(el)
                 row_scores.append(score)
 
                 if score > max_score:
@@ -77,26 +77,27 @@ class Herbivore:
 
         self.move_from_to(self, node, max_score_node)
 
-    def get_cost(self, field_small):
+    def get_cost(self, el):
         res = 0
 
-        plant_bonus = 2
+        plant_bonus = 4
         herb_bonus = 3
         pred_fine = 4
 
-        for row in field_small:
-            for el in row:
-                if len(el.herbivores) < 2:
-                    res += len(el.herbivores) * herb_bonus
-                else:
-                    res -= herb_bonus
+        # print('Element', el)
+        # for row in field_small:
+        #     for el in row:
+        if len(el.herbivores) < 2:
+            res += len(el.herbivores) * herb_bonus
+        else:
+            res -= herb_bonus
 
-                res -= len(el.predators) * pred_fine
+        res -= len(el.predators) * pred_fine
 
-                if el.plant is not None:
-                    res += plant_bonus
-                else:
-                    res -= plant_bonus
+        if el.plant is not None:
+            res += plant_bonus * (el.plant.hp / 100)
+        else:
+            res -= plant_bonus
 
         return res
 
